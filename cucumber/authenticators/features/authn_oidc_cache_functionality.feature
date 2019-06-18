@@ -1,3 +1,4 @@
+@single-puma-worker
 Feature: Disable feature to test Cache functionality manually 
 #   This test can work only against one worker with clean cache (in OSS container puma is running with 2 workers),
 #   since the cache is saved in worker context and not in the whole cluster,

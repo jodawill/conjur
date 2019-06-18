@@ -17,6 +17,7 @@ services:
       CONJUR_ACCOUNT: cucumber
       CONJUR_DATA_KEY:
       RAILS_ENV:
+      WEB_CONCURRENCY:
       CONJUR_AUTHENTICATORS: authn-ldap/test,authn-ldap/secure,authn-oidc/keycloak
       LDAP_URI: ldap://ldap-server:389
       LDAP_BASE: dc=conjur,dc=net

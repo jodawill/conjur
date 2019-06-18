@@ -64,7 +64,13 @@ cucumber_authenticators() {
   cucumber_env_args="$cucumber_env_args -e ID_TOKEN_USER_PROPERTY=preferred_username"
 
   _prepare_env_auth_ldap
-  _run_cucumber_tests authenticators 'oidc-keycloak ldap-server' "$cucumber_env_args"
+  cucumber_args="~@single-puma-worker"
+  #run_cucumber_tests authenticators 'oidc-keycloak ldap-server' "$cucumber_env_args" "$cucumber_args"
+
+  # Certificate cache tests require that Conjur use only a single Puma worker
+  cucumber_env_args="$cucumber_env_args -e WEB_CONCURRENCY=1"
+  cucumber_args="@single-puma-worker"
+  _run_cucumber_tests authenticators 'oidc-keycloak' "$cucumber_env_args" "$cucumber_args"
 }
 
 cucumber_api() {
@@ -321,6 +327,11 @@ _run_cucumber_tests() {
   if [[ ! -z "$1" ]]; then
     local cucumber_env_args="$1"; shift
   fi
+
+  # Cucumber arguments
+  if [[ ! -z "$1" ]]; then
+    local cucumber_args="$1"; shift
+  fi
   
   _setup_for_cucumber "$services"
   
@@ -329,7 +340,7 @@ _run_cucumber_tests() {
   
   # Run the tests
   _run_cucumber "$cucumber_env_args" \
-     "bundle exec cucumber -p $profile --format junit --out cucumber/$profile/features/reports"
+     "bundle exec cucumber -p $profile --format junit --out cucumber/$profile/features/reports $cucumber_args"
 
   docker-compose down --rmi 'local' --volumes
 }

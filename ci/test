@@ -64,12 +64,12 @@ cucumber_authenticators() {
   cucumber_env_args="$cucumber_env_args -e ID_TOKEN_USER_PROPERTY=preferred_username"
 
   _prepare_env_auth_ldap
-  cucumber_args="~@single-puma-worker"
+  cucumber_args="--tags ~@single-puma-worker"
   #run_cucumber_tests authenticators 'oidc-keycloak ldap-server' "$cucumber_env_args" "$cucumber_args"
 
   # Certificate cache tests require that Conjur use only a single Puma worker
   cucumber_env_args="$cucumber_env_args -e WEB_CONCURRENCY=1"
-  cucumber_args="@single-puma-worker"
+  cucumber_args="--tags @single-puma-worker"
   _run_cucumber_tests authenticators 'oidc-keycloak' "$cucumber_env_args" "$cucumber_args"
 }
 

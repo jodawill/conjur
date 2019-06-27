@@ -14,16 +14,18 @@ class SecretsController < RestController
     value = request.raw_post
 
     raise ArgumentError, "'value' may not be empty" if value.blank?
+    Secret.transaction do
+      Audit.transaction do
+        Secret.create resource_id: resource.id, value: value
+        resource.enforce_secrets_version_limit
+        head :created
 
-    Secret.create resource_id: resource.id, value: value
-    resource.enforce_secrets_version_limit
-
-    head :created
-  ensure
-    Audit::Event::Update.new(error_info.merge(
-      resource: resource,
-      user: @current_user
-    )).log_to Audit.logger
+        Audit::Event::Update.new(error_info.merge(
+          resource: resource,
+          user: @current_user
+        )).log_to Audit.logger
+      end
+    end
   end
   
   def show

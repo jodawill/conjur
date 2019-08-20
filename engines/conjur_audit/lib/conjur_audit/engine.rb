@@ -4,7 +4,12 @@ module ConjurAudit
   class Engine < ::Rails::Engine
     isolate_namespace ConjurAudit
 
-    initializer :connect_audit_database do
+    initializer :append_migrations do |app|
+      unless app.root.to_s.match root.to_s
+        config.paths["db/migrate"].expanded.each do |expanded_path|
+          app.config.paths["db/migrate"] << expanded_path
+        end
+      end
       if defined?(config.audit_database)
         db = Sequel.connect db
         db.extension :pg_json

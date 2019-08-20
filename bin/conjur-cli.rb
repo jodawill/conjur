@@ -62,6 +62,7 @@ command :server do |c|
     connect
 
     system "rake db:migrate" or exit $?.exitstatus
+    #system "rake conjur_audit:install:migrations"
     if account
       system "rake account:create[#{account}]" or exit $?.exitstatus
     end

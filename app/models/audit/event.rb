@@ -10,8 +10,8 @@ module Audit
     progname 'conjur'
 
     def log_to logger
-      logger.log logger_severity, self, progname
       log_to_db
+      logger.log logger_severity, self, progname
     end
 
     def log_to_db

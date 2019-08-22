@@ -37,8 +37,7 @@ Feature: Users can authneticate with OIDC authenticator
     Given I have a "variable" resource called "test-variable"
     And I permit user "alice" to "execute" it
     And I add the secret value "test-secret" to the resource "cucumber:variable:test-variable"
-    And I get authorization code for username "alice" and password "alice"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "alice" and password "alice"
     When I authenticate via OIDC with id token
     Then user "alice" is authorized
     And I successfully GET "/secrets/cucumber/variable/test-variable" with authorized user
@@ -53,8 +52,7 @@ Feature: Users can authneticate with OIDC authenticator
       member: !user alice@conjur.net
     """
     When I add the secret value "email" to the resource "cucumber:variable:conjur/authn-oidc/keycloak/id-token-user-property"
-    And I get authorization code for username "alice" and password "alice"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "alice" and password "alice"
     And I authenticate via OIDC with id token
     Then user "alice@conjur.net" is authorized
 
@@ -73,14 +71,12 @@ Feature: Users can authneticate with OIDC authenticator
       role: !group conjur/authn-oidc/keycloak/users
       member: !group more-users
     """
-    And I get authorization code for username "bob" and password "bob"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "bob" and password "bob"
     When I authenticate via OIDC with id token
     Then user "bob" is authorized
 
   Scenario: Non-existing username in ID token is denied
-    Given I get authorization code for username "not_in_conjur" and password "not_in_conjur"
-    And I fetch an ID Token
+    Given I fetch an ID Token for username "not_in_conjur" and password "not_in_conjur"
     And I save my place in the log file
     When I authenticate via OIDC with id token
     Then it is unauthorized
@@ -94,8 +90,7 @@ Feature: Users can authneticate with OIDC authenticator
     """
     - !user bob
     """
-    And I get authorization code for username "bob" and password "bob"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "bob" and password "bob"
     And I save my place in the log file
     When I authenticate via OIDC with id token
     Then it is forbidden
@@ -106,8 +101,7 @@ Feature: Users can authneticate with OIDC authenticator
 
   Scenario: ID token without value of variable id-token-user-property is denied
     When I add the secret value "non_existing_field" to the resource "cucumber:variable:conjur/authn-oidc/keycloak/id-token-user-property"
-    And I get authorization code for username "alice" and password "alice"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "alice" and password "alice"
     And I save my place in the log file
     When I authenticate via OIDC with id token
     Then it is unauthorized
@@ -136,8 +130,7 @@ Feature: Users can authneticate with OIDC authenticator
 
   # Should crash in GA, update the message to "account does not exists"
   Scenario: non-existing account in request is denied
-    Given I get authorization code for username "alice" and password "alice"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "alice" and password "alice"
     And I save my place in the log file
     When I authenticate via OIDC with id token and account "non-existing"
     Then it is unauthorized
@@ -147,8 +140,7 @@ Feature: Users can authneticate with OIDC authenticator
     """
 
   Scenario: admin user is denied
-    Given I get authorization code for username "admin" and password "admin"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "admin" and password "admin"
     And I save my place in the log file
     When I authenticate via OIDC with id token
     Then it is unauthorized
@@ -158,11 +150,10 @@ Feature: Users can authneticate with OIDC authenticator
     """
 
   Scenario: provider-uri dynamic change
-    Given I get authorization code for username "alice" and password "alice"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "alice" and password "alice"
     And I authenticate via OIDC with id token
     And user "alice" is authorized
-    # Update provider uri to an unreachable hostname
+    # Update provider uri to an unreachable hostname (not using ".test" TLD as it returns a bad gateway response)
     When I add the secret value "http://unreachable.com/" to the resource "cucumber:variable:conjur/authn-oidc/keycloak/provider-uri"
     And I save my place in the log file
     And I authenticate via OIDC with id token
@@ -177,33 +168,30 @@ Feature: Users can authneticate with OIDC authenticator
     Then it is bad gateway
     # Check recovery to a valid provider uri
     When I successfully set OIDC variables
-    And I get authorization code for username "alice" and password "alice"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "alice" and password "alice"
     And I authenticate via OIDC with id token
     Then user "alice" is authorized
 
   Scenario: Performance test
-    Given I get authorization code for username "alice" and password "alice"
-    And I fetch an ID Token
-    When I authenticate "1000" times in "10" threads via OIDC with id token
+    And I fetch an ID Token for username "alice" and password "alice"
+    When I authenticate 1000 times in 10 threads via OIDC with id token
     Then The "max" response time should be less than "1" seconds
     And The "avg" response time should be less than "0.25" seconds
 
   Scenario: Load with cache
-    Given I get authorization code for username "alice" and password "alice"
-    And I fetch an ID Token
+    And I fetch an ID Token for username "alice" and password "alice"
     # Make sure cache contains a valid certificate
     And I authenticate via OIDC with id token
     And user "alice" is authorized
     And I save my place in the log file
     # Load while the cache contains OIDC provider certificate
-    When I authenticate "2000" times in "20" threads via OIDC with id token
-    Then The following appears "2000" times in the log after my savepoint:
+    When I authenticate 2000 times in 20 threads via OIDC with id token
+    Then The following appears 2000 times in the log after my savepoint:
     """
     Completed 200 OK
     """
     # Validate cache functionality
-    And The following appears "0" times in the log after my savepoint:
+    And The following appears 0 times in the log after my savepoint:
     """
     CONJ00016D Rate limited cache updated successfully
     """

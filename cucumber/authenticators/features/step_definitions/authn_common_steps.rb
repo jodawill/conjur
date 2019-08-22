@@ -1,5 +1,5 @@
 Then(/^user "(\S+)" is authorized$/) do |username|
-  expect(token_for(username, @response_body)).to be
+  expect(retrieved_access_token.username).to eq(username)
 end
 
 Then(/^login response token is valid$/) do
@@ -7,21 +7,21 @@ Then(/^login response token is valid$/) do
 end
 
 Then(/it is a bad request/) do
-  expect(bad_request?).to be true
+  expect(bad_request?).to be(true), "http status is #{http_status}"
 end
 
 Then(/it is unauthorized/) do
-  expect(unauthorized?).to be true
+  expect(unauthorized?).to be(true), "http status is #{http_status}"
 end
 
 Then(/it is forbidden/) do
-  expect(forbidden?).to be true
+  expect(forbidden?).to be(true), "http status is #{http_status}"
 end
 
 Then(/it is gateway timeout/) do
-  expect(gateway_timeout?).to be true
+  expect(gateway_timeout?).to be(true), "http status is #{http_status} & rest client error is #{rest_client_error.class}"
 end
 
 Then(/it is bad gateway/) do
-  expect(bad_gateway?).to be true
+  expect(bad_gateway?).to be(true), "http status is #{http_status}"
 end
